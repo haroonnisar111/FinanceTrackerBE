@@ -1,12 +1,17 @@
 package com.budgetbuddy.personal_finance_tracker.service;
 
-import com.budgetbuddy.personal_finance_tracker.entity.Category;
-import com.budgetbuddy.personal_finance_tracker.repository.CategoryRepository;
+import com.budgetbuddy.personal_finance_tracker.entity.User;
+import com.budgetbuddy.personal_finance_tracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,92 +19,90 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class CategoryService {
+public class UserService implements UserDetailsService {
 
-    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public Category createCategory(Category category) {
-        log.info("Creating new category: {}", category.getName());
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-        if (categoryRepository.existsByName(category.getName())) {
-            throw new IllegalArgumentException("Category name already exists");
+    public User createUser(User user) {
+        log.info("Creating new user: {}", user.getUsername());
+
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new IllegalArgumentException("Username already exists");
         }
 
-        return categoryRepository.save(category);
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<Category> findById(Long id) {
-        return categoryRepository.findById(id);
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<Category> findByName(String name) {
-        return categoryRepository.findByName(name);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Category> findAllActiveCategories() {
-        return categoryRepository.findByIsActiveTrueOrderByNameAsc();
-    }
-
-    @Transactional(readOnly = true)
-    public List<Category> findAllCategories() {
-        return categoryRepository.findByIsActiveOrderByNameAsc(null);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Category> searchCategories(String name) {
-        return categoryRepository.findActiveCategoriesByNameContaining(name);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Category> findCategoriesByUsage() {
-        return categoryRepository.findCategoriesOrderByTransactionCount();
-    }
-
-    @Transactional(readOnly = true)
-    public List<Category> findUnusedCategories() {
-        return categoryRepository.findUnusedActiveCategories();
-    }
-
-    public Category updateCategory(Long id, Category updatedCategory) {
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-
-        if (!existingCategory.getName().equals(updatedCategory.getName()) &&
-                categoryRepository.existsByName(updatedCategory.getName())) {
-            throw new IllegalArgumentException("Category name already exists");
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new IllegalArgumentException("Email already exists");
         }
 
-        existingCategory.setName(updatedCategory.getName());
-        existingCategory.setDescription(updatedCategory.getDescription());
-        existingCategory.setColor(updatedCategory.getColor());
-
-        return categoryRepository.save(existingCategory);
-    }
-
-    public void deactivateCategory(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-
-        category.setIsActive(false);
-        categoryRepository.save(category);
-    }
-
-    public void deleteCategory(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-
-        if (!category.getTransactions().isEmpty()) {
-            throw new IllegalStateException("Cannot delete category with existing transactions");
-        }
-
-        categoryRepository.delete(category);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
     }
 
     @Transactional(readOnly = true)
-    public long getActiveCategoryCount() {
-        return categoryRepository.countActiveCategories();
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> findAllActiveUsers() {
+        return userRepository.findByIsActiveTrue();
+    }
+
+    public User updateUser(Long id, User updatedUser) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        existingUser.setFirstName(updatedUser.getFirstName());
+        existingUser.setLastName(updatedUser.getLastName());
+        existingUser.setEmail(updatedUser.getEmail());
+
+        return userRepository.save(existingUser);
+    }
+
+    public void updatePassword(Long id, String newPassword) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    public void updateLastLogin(Long userId) {
+        userRepository.updateLastLoginTime(userId, LocalDateTime.now());
+    }
+
+    public void deactivateUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        user.setIsActive(false);
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public long getActiveUserCount() {
+        return userRepository.countActiveUsers();
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsernameOrEmail(username, username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 }

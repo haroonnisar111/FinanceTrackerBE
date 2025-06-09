@@ -24,6 +24,9 @@ public class CategoryService {
 
     public Category createCategory(Category category) {
         log.info("Creating new category: {}", category.getName());
+        if (category == null || category.getName() == null) {
+            throw new IllegalArgumentException("Category or category name cannot be null");
+        }
 
         if (categoryRepository.existsByName(category.getName())) {
             throw new IllegalArgumentException("Category name already exists");
