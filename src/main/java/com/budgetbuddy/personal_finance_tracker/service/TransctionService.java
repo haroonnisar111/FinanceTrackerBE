@@ -21,13 +21,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class TransactionService {
+public class TransctionService {
 
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
     private final BudgetService budgetService;
 
-    public TransactionService(TransactionRepository transactionRepository, CategoryRepository categoryRepository, BudgetService budgetService) {
+    public TransctionService(TransactionRepository transactionRepository, CategoryRepository categoryRepository, BudgetService budgetService) {
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
         this.budgetService = budgetService;
@@ -165,4 +165,3 @@ public class TransactionService {
         return transactionRepository.getCategorySummaryByTypeAndDateRange(type, startDate, endDate);
     }
 }
-
