@@ -27,11 +27,6 @@ public class TransctionService {
     private final CategoryRepository categoryRepository;
     private final BudgetService budgetService;
 
-    public TransctionService(TransactionRepository transactionRepository, CategoryRepository categoryRepository, BudgetService budgetService) {
-        this.transactionRepository = transactionRepository;
-        this.categoryRepository = categoryRepository;
-        this.budgetService = budgetService;
-    }
 
     public Transaction createTransaction(Transaction transaction) {
         log.info("Creating new transaction: {}", transaction.getDescription());
