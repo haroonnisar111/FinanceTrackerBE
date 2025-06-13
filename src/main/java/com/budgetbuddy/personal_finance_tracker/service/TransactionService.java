@@ -21,7 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class TransctionService {
+public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
