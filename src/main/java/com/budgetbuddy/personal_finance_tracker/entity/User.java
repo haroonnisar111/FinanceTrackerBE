@@ -125,4 +125,5 @@ public class User implements UserDetails {
     public void updateLastLogin() {
         this.lastLoginAt = LocalDateTime.now();
     }
+    public LocalDateTime getLastLogin(){return this.lastLoginAt;}
 }

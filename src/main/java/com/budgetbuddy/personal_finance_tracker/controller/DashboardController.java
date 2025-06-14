@@ -92,7 +92,7 @@ public class DashboardController {
                 public final long activeBudgets = activeBudgetCount;
                 public final BigDecimal totalMonthlyIncome = monthlyIncome;
                 public final BigDecimal totalMonthlyExpense = monthlyExpense;
-                public final String currentMonth = currentMonth.toString();
+                public final String currentMonth = LocalDate.now().getMonth().toString();
             };
 
             return ResponseEntity.ok(ApiResponse.success("Admin dashboard statistics retrieved", adminStats));
