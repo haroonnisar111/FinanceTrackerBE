@@ -6,6 +6,7 @@ import com.budgetbuddy.personal_finance_tracker.dto.TransactionSummaryResponse;
 import com.budgetbuddy.personal_finance_tracker.entity.Transaction;
 import com.budgetbuddy.personal_finance_tracker.entity.Transaction.TransactionType;
 import com.budgetbuddy.personal_finance_tracker.entity.Category;
+import com.budgetbuddy.personal_finance_tracker.mapper.TransactionMapper;
 import com.budgetbuddy.personal_finance_tracker.service.TransactionService;
 import com.budgetbuddy.personal_finance_tracker.service.CategoryService;
 import jakarta.validation.Valid;
@@ -34,14 +35,15 @@ public class TransactionController {
 
     private final TransactionService transactionService;
     private final CategoryService categoryService;
+    private final TransactionMapper transactionMapper;
 
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<TransactionResponse>> createTransaction(@Valid @RequestBody TransactionRequest transactionRequest) {
         try {
-            Transaction transaction = mapToEntity(transactionRequest);
+            Transaction transaction = transactionMapper.toEntity(transactionRequest);
             Transaction createdTransaction = transactionService.createTransaction(transaction);
-            TransactionResponse response = mapToResponse(createdTransaction);
+            TransactionResponse response = transactionMapper.toResponse(createdTransaction);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success("Transaction created successfully", response));
@@ -59,7 +61,7 @@ public class TransactionController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<TransactionResponse>> getTransactionById(@PathVariable Long id) {
         return transactionService.findById(id)
-                .map(transaction -> ResponseEntity.ok(ApiResponse.success("Transaction found", mapToResponse(transaction))))
+                .map(transaction -> ResponseEntity.ok(ApiResponse.success("Transaction found", transactionMapper.toResponse(transaction))))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -71,7 +73,7 @@ public class TransactionController {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Transaction> transactions = transactionService.findAllTransactions(pageable);
-        Page<TransactionResponse> responses = transactions.map(this::mapToResponse);
+        Page<TransactionResponse> responses = transactions.map(transactionMapper::toResponse);
 
         return ResponseEntity.ok(ApiResponse.success("Transactions retrieved", responses));
     }
@@ -81,7 +83,7 @@ public class TransactionController {
     public ResponseEntity<ApiResponse<List<TransactionResponse>>> getTransactionsByType(@PathVariable TransactionType type) {
         List<Transaction> transactions = transactionService.findTransactionsByType(type);
         List<TransactionResponse> responses = transactions.stream()
-                .map(this::mapToResponse)
+                .map(transactionMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Transactions by type retrieved", responses));
@@ -93,7 +95,7 @@ public class TransactionController {
         try {
             List<Transaction> transactions = transactionService.findTransactionsByCategory(categoryId);
             List<TransactionResponse> responses = transactions.stream()
-                    .map(this::mapToResponse)
+                    .map(transactionMapper::toResponse)
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(ApiResponse.success("Transactions by category retrieved", responses));
@@ -111,7 +113,7 @@ public class TransactionController {
 
         List<Transaction> transactions = transactionService.findTransactionsByDateRange(startDate, endDate);
         List<TransactionResponse> responses = transactions.stream()
-                .map(this::mapToResponse)
+                .map(transactionMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Transactions by date range retrieved", responses));
@@ -126,7 +128,7 @@ public class TransactionController {
 
         List<Transaction> transactions = transactionService.findTransactionsByDateRangeAndType(startDate, endDate, type);
         List<TransactionResponse> responses = transactions.stream()
-                .map(this::mapToResponse)
+                .map(transactionMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Transactions by date range and type retrieved", responses));
@@ -137,7 +139,7 @@ public class TransactionController {
     public ResponseEntity<ApiResponse<List<TransactionResponse>>> searchTransactions(@RequestParam String keyword) {
         List<Transaction> transactions = transactionService.searchTransactions(keyword);
         List<TransactionResponse> responses = transactions.stream()
-                .map(this::mapToResponse)
+                .map(transactionMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Transactions found", responses));
@@ -150,7 +152,7 @@ public class TransactionController {
 
         List<Transaction> transactions = transactionService.findRecentTransactions(limit);
         List<TransactionResponse> responses = transactions.stream()
-                .map(this::mapToResponse)
+                .map(transactionMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Recent transactions retrieved", responses));
@@ -162,9 +164,9 @@ public class TransactionController {
             @PathVariable Long id,
             @Valid @RequestBody TransactionRequest transactionRequest) {
         try {
-            Transaction updatedTransaction = mapToEntity(transactionRequest);
+            Transaction updatedTransaction = transactionMapper.toEntity(transactionRequest);
             Transaction transaction = transactionService.updateTransaction(id, updatedTransaction);
-            TransactionResponse response = mapToResponse(transaction);
+            TransactionResponse response = transactionMapper.toResponse(transaction);
 
             return ResponseEntity.ok(ApiResponse.success("Transaction updated successfully", response));
         } catch (IllegalArgumentException e) {
@@ -233,34 +235,5 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.success("Category summary retrieved", summary));
     }
 
-    private Transaction mapToEntity(TransactionRequest request) {
-        Transaction transaction = new Transaction();
-        transaction.setDescription(request.getDescription());
-        transaction.setAmount(request.getAmount());
-        transaction.setTransactionDate(request.getTransactionDate());
-        transaction.setType(request.getType());
-        transaction.setNotes(request.getNotes());
 
-        // Set category
-        Category category = new Category();
-        category.setId(request.getCategoryId());
-        transaction.setCategory(category);
-
-        return transaction;
-    }
-
-    private TransactionResponse mapToResponse(Transaction transaction) {
-        return TransactionResponse.builder()
-                .id(transaction.getId())
-                .description(transaction.getDescription())
-                .amount(transaction.getAmount())
-                .transactionDate(transaction.getTransactionDate())
-                .type(transaction.getType())
-                .notes(transaction.getNotes())
-                .categoryId(transaction.getCategory().getId())
-                .categoryName(transaction.getCategory().getName())
-                .createdAt(transaction.getCreatedAt())
-                .updatedAt(transaction.getUpdatedAt())
-                .build();
-    }
 }
