@@ -53,7 +53,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
         return userService.findById(id)
-                .map(user -> ResponseEntity.ok(ApiResponse.success("User found", mapToResponse(user))))
+                .map(user -> ResponseEntity.ok(ApiResponse.success("User found",userMapper.toResponse(user))))
                 .orElse(ResponseEntity.notFound().build());
     }
 
