@@ -61,7 +61,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN') or #username == authentication.principal.username")
     public ResponseEntity<ApiResponse<UserResponse>> getUserByUsername(@PathVariable String username) {
         return userService.findByUsername(username)
-                .map(user -> ResponseEntity.ok(ApiResponse.success("User found", mapToResponse(user))))
+                .map(user -> ResponseEntity.ok(ApiResponse.success("User found", userMapper.toResponse(user))))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -69,7 +69,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN') or #email == authentication.principal.username")
     public ResponseEntity<ApiResponse<UserResponse>> getUserByEmail(@PathVariable String email) {
         return userService.findByEmail(email)
-                .map(user -> ResponseEntity.ok(ApiResponse.success("User found", mapToResponse(user))))
+                .map(user -> ResponseEntity.ok(ApiResponse.success("User found",userMapper.toResponse(user))))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -78,7 +78,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<List<UserResponse>>> getActiveUsers() {
         List<User> users = userService.findAllActiveUsers();
         List<UserResponse> responses = users.stream()
-                .map(this::mapToResponse)
+                .map(userMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Active users retrieved", responses));
@@ -90,7 +90,7 @@ public class UserController {
             @PathVariable Long id,
             @Valid @RequestBody UserRequest userRequest) {
         try {
-            User updatedUser = mapToEntity(userRequest);
+            User updatedUser = userMapper.toEntity(userRequest);
             User user = userService.updateUser(id, updatedUser);
             UserResponse response = userMapper.toResponse(user);
 
