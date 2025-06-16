@@ -1,4 +1,0 @@
-package application
-
-class yml {
-}
