@@ -33,7 +33,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponse>> createUser(@Valid @RequestBody UserRequest userRequest) {
         try {
-            User user = mapToEntity(userRequest);
+            User user = userMapper.toEntity(userRequest);
             User createdUser = userService.createUser(user);
             UserResponse response = userMapper.toResponse(createdUser);
 
