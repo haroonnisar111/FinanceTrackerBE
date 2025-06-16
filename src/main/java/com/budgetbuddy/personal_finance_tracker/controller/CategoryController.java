@@ -3,6 +3,7 @@ import com.budgetbuddy.personal_finance_tracker.dto.ApiResponse;
 import com.budgetbuddy.personal_finance_tracker.dto.CategoryRequest;
 import com.budgetbuddy.personal_finance_tracker.dto.CategoryResponse;
 import com.budgetbuddy.personal_finance_tracker.entity.Category;
+import com.budgetbuddy.personal_finance_tracker.mapper.CategoryMapper;
 import com.budgetbuddy.personal_finance_tracker.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,14 +24,15 @@ import java.util.stream.Collectors;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final CategoryMapper categoryMapper;
 
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(@Valid @RequestBody CategoryRequest categoryRequest) {
         try {
-            Category category = mapToEntity(categoryRequest);
+            Category category = categoryMapper.toEntity(categoryRequest);
             Category createdCategory = categoryService.createCategory(category);
-            CategoryResponse response = mapToResponse(createdCategory);
+            CategoryResponse response = categoryMapper.toResponse(createdCategory);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success("Category created successfully", response));
@@ -48,7 +50,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryById(@PathVariable Long id) {
         return categoryService.findById(id)
-                .map(category -> ResponseEntity.ok(ApiResponse.success("Category found", mapToResponse(category))))
+                .map(category -> ResponseEntity.ok(ApiResponse.success("Category found", categoryMapper.toResponse(category))))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -56,7 +58,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryByName(@PathVariable String name) {
         return categoryService.findByName(name)
-                .map(category -> ResponseEntity.ok(ApiResponse.success("Category found", mapToResponse(category))))
+                .map(category -> ResponseEntity.ok(ApiResponse.success("Category found", categoryMapper.toResponse(category))))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -65,7 +67,7 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getActiveCategories() {
         List<Category> categories = categoryService.findAllActiveCategories();
         List<CategoryResponse> responses = categories.stream()
-                .map(this::mapToResponse)
+                .map(categoryMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Active categories retrieved", responses));
@@ -76,7 +78,7 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategories() {
         List<Category> categories = categoryService.findAllCategories();
         List<CategoryResponse> responses = categories.stream()
-                .map(this::mapToResponse)
+                .map(categoryMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("All categories retrieved", responses));
@@ -87,7 +89,7 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> searchCategories(@RequestParam String name) {
         List<Category> categories = categoryService.searchCategories(name);
         List<CategoryResponse> responses = categories.stream()
-                .map(this::mapToResponse)
+                .map(categoryMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Categories found", responses));
@@ -98,7 +100,7 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getCategoriesByUsage() {
         List<Category> categories = categoryService.findCategoriesByUsage();
         List<CategoryResponse> responses = categories.stream()
-                .map(this::mapToResponse)
+                .map(categoryMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Categories by usage retrieved", responses));
@@ -109,7 +111,7 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getUnusedCategories() {
         List<Category> categories = categoryService.findUnusedCategories();
         List<CategoryResponse> responses = categories.stream()
-                .map(this::mapToResponse)
+                .map(categoryMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Unused categories retrieved", responses));
@@ -121,9 +123,9 @@ public class CategoryController {
             @PathVariable Long id,
             @Valid @RequestBody CategoryRequest categoryRequest) {
         try {
-            Category updatedCategory = mapToEntity(categoryRequest);
+            Category updatedCategory = categoryMapper.toEntity(categoryRequest);
             Category category = categoryService.updateCategory(id, updatedCategory);
-            CategoryResponse response = mapToResponse(category);
+            CategoryResponse response = categoryMapper.toResponse(category);
 
             return ResponseEntity.ok(ApiResponse.success("Category updated successfully", response));
         } catch (IllegalArgumentException e) {
@@ -175,23 +177,4 @@ public class CategoryController {
         return ResponseEntity.ok(ApiResponse.success("Active category count retrieved", count));
     }
 
-    private Category mapToEntity(CategoryRequest request) {
-        Category category = new Category();
-        category.setName(request.getName());
-        category.setDescription(request.getDescription());
-        category.setColor(request.getColor());
-        return category;
-    }
-
-    private CategoryResponse mapToResponse(Category category) {
-        return CategoryResponse.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .description(category.getDescription())
-                .color(category.getColor())
-                .isActive(category.getIsActive())
-                .createdAt(category.getCreatedAt())
-                .transactionCount(category.getTransactions() != null ? category.getTransactions().size() : 0)
-                .build();
-    }
 }
