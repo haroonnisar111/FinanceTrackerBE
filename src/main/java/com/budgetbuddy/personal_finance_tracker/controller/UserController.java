@@ -92,7 +92,7 @@ public class UserController {
         try {
             User updatedUser = mapToEntity(userRequest);
             User user = userService.updateUser(id, updatedUser);
-            UserResponse response = mapToResponse(user);
+            UserResponse response = userMapper.toResponse(user);
 
             return ResponseEntity.ok(ApiResponse.success("User updated successfully", response));
         } catch (IllegalArgumentException e) {
