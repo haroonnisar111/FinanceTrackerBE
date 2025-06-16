@@ -72,7 +72,7 @@ public class BudgetMapper {
                 .build();
     }
 
-    public Budget updateEntity(Budget existingBudget, BudgetRequest request) {
+    public Budget updateEntity(BudgetRequest request) {
         if (request == null || existingBudget == null) {
             return existingBudget;
         }

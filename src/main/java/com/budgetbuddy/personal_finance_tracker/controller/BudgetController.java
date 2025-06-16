@@ -6,6 +6,7 @@ import com.budgetbuddy.personal_finance_tracker.dto.BudgetStatsResponse;
 import com.budgetbuddy.personal_finance_tracker.entity.Budget;
 import com.budgetbuddy.personal_finance_tracker.entity.Budget.BudgetPeriod;
 import com.budgetbuddy.personal_finance_tracker.entity.Category;
+import com.budgetbuddy.personal_finance_tracker.mapper.BudgetMapper;
 import com.budgetbuddy.personal_finance_tracker.service.BudgetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +28,15 @@ import java.util.stream.Collectors;
 public class BudgetController {
 
     private final BudgetService budgetService;
+    private final BudgetMapper budgetMapper;
 
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<BudgetResponse>> createBudget(@Valid @RequestBody BudgetRequest budgetRequest) {
         try {
-            Budget budget = mapToEntity(budgetRequest);
+            Budget budget = budgetMapper.toEntity(budgetRequest);
             Budget createdBudget = budgetService.createBudget(budget);
-            BudgetResponse response = mapToResponse(createdBudget);
+            BudgetResponse response = budgetMapper.toResponse(createdBudget);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success("Budget created successfully", response));
@@ -52,7 +54,7 @@ public class BudgetController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<BudgetResponse>> getBudgetById(@PathVariable Long id) {
         return budgetService.findById(id)
-                .map(budget -> ResponseEntity.ok(ApiResponse.success("Budget found", mapToResponse(budget))))
+                .map(budget -> ResponseEntity.ok(ApiResponse.success("Budget found", budgetMapper.toResponse(budget))))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -61,7 +63,7 @@ public class BudgetController {
     public ResponseEntity<ApiResponse<List<BudgetResponse>>> getActiveBudgets() {
         List<Budget> budgets = budgetService.findAllActiveBudgets();
         List<BudgetResponse> responses = budgets.stream()
-                .map(this::mapToResponse)
+                .map(budgetMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Active budgets retrieved", responses));
@@ -73,7 +75,7 @@ public class BudgetController {
         try {
             List<Budget> budgets = budgetService.findBudgetsByCategory(categoryId);
             List<BudgetResponse> responses = budgets.stream()
-                    .map(this::mapToResponse)
+                    .map(budgetMapper::toResponse)
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(ApiResponse.success("Budgets by category retrieved", responses));
@@ -88,7 +90,7 @@ public class BudgetController {
     public ResponseEntity<ApiResponse<List<BudgetResponse>>> getBudgetsByPeriod(@PathVariable BudgetPeriod period) {
         List<Budget> budgets = budgetService.findBudgetsByPeriod(period);
         List<BudgetResponse> responses = budgets.stream()
-                .map(this::mapToResponse)
+                .map(budgetMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Budgets by period retrieved", responses));
@@ -99,7 +101,7 @@ public class BudgetController {
     public ResponseEntity<ApiResponse<BudgetResponse>> getActiveBudgetByCategory(@PathVariable Long categoryId) {
         try {
             return budgetService.findActiveBudgetByCategory(categoryId)
-                    .map(budget -> ResponseEntity.ok(ApiResponse.success("Active budget found", mapToResponse(budget))))
+                    .map(budget -> ResponseEntity.ok(ApiResponse.success("Active budget found", budgetMapper.toResponse(budget))))
                     .orElse(ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
@@ -112,7 +114,7 @@ public class BudgetController {
     public ResponseEntity<ApiResponse<List<BudgetResponse>>> getExceededBudgets() {
         List<Budget> budgets = budgetService.findExceededBudgets();
         List<BudgetResponse> responses = budgets.stream()
-                .map(this::mapToResponse)
+                .map(budgetMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Exceeded budgets retrieved", responses));
@@ -125,7 +127,7 @@ public class BudgetController {
 
         List<Budget> budgets = budgetService.findBudgetsNearLimit(thresholdPercentage);
         List<BudgetResponse> responses = budgets.stream()
-                .map(this::mapToResponse)
+                .map(budgetMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.success("Budgets near limit retrieved", responses));
@@ -137,9 +139,9 @@ public class BudgetController {
             @PathVariable Long id,
             @Valid @RequestBody BudgetRequest budgetRequest) {
         try {
-            Budget updatedBudget = mapToEntity(budgetRequest);
+            Budget updatedBudget = budgetMapper.updateEntity(budgetRequest);
             Budget budget = budgetService.updateBudget(id, updatedBudget);
-            BudgetResponse response = mapToResponse(budget);
+            BudgetResponse response = budgetMapper.toResponse(budget);
 
             return ResponseEntity.ok(ApiResponse.success("Budget updated successfully", response));
         } catch (IllegalArgumentException e) {
@@ -224,45 +226,4 @@ public class BudgetController {
         return ResponseEntity.ok(ApiResponse.success("Budget utilization statistics retrieved", stats));
     }
 
-    private Budget mapToEntity(BudgetRequest request) {
-        Budget budget = new Budget();
-        budget.setName(request.getName());
-        budget.setBudgetAmount(request.getBudgetAmount());
-        budget.setStartDate(request.getStartDate());
-        budget.setEndDate(request.getEndDate());
-        budget.setPeriod(request.getPeriod());
-
-        // Set category
-        Category category = new Category();
-        category.setId(request.getCategoryId());
-        budget.setCategory(category);
-
-        return budget;
-    }
-
-    private BudgetResponse mapToResponse(Budget budget) {
-        BigDecimal utilizationPercentage = BigDecimal.ZERO;
-        if (budget.getBudgetAmount().compareTo(BigDecimal.ZERO) > 0) {
-            utilizationPercentage = budget.getSpentAmount()
-                    .divide(budget.getBudgetAmount(), 4, BigDecimal.ROUND_HALF_UP)
-                    .multiply(BigDecimal.valueOf(100));
-        }
-
-        return BudgetResponse.builder()
-                .id(budget.getId())
-                .name(budget.getName())
-                .budgetAmount(budget.getBudgetAmount())
-                .spentAmount(budget.getSpentAmount())
-                .remainingAmount(budget.getBudgetAmount().subtract(budget.getSpentAmount()))
-                .utilizationPercentage(utilizationPercentage)
-                .startDate(budget.getStartDate())
-                .endDate(budget.getEndDate())
-                .period(budget.getPeriod())
-                .isActive(budget.getIsActive())
-                .categoryId(budget.getCategory().getId())
-                .categoryName(budget.getCategory().getName())
-                .createdAt(budget.getCreatedAt())
-                .updatedAt(budget.getUpdatedAt())
-                .build();
-    }
 }
