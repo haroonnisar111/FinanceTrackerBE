@@ -4,6 +4,7 @@ import com.budgetbuddy.personal_finance_tracker.dto.UserRequest;
 import com.budgetbuddy.personal_finance_tracker.dto.UserResponse;
 import com.budgetbuddy.personal_finance_tracker.dto.PasswordUpdateRequest;
 import com.budgetbuddy.personal_finance_tracker.entity.User;
+import com.budgetbuddy.personal_finance_tracker.mapper.UserMapper;
 import com.budgetbuddy.personal_finance_tracker.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +28,14 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponse>> createUser(@Valid @RequestBody UserRequest userRequest) {
         try {
             User user = mapToEntity(userRequest);
             User createdUser = userService.createUser(user);
-            UserResponse response = mapToResponse(createdUser);
+            UserResponse response = userMapper.toResponse(createdUser);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success("User created successfully", response));
@@ -144,7 +146,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("Active user count retrieved", count));
     }
 
-    private User mapToEntity(UserRequest request) {
+    private User userMapper(UserRequest request) {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
