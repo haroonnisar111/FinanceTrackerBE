@@ -5,6 +5,7 @@ import com.budgetbuddy.personal_finance_tracker.dto.LoginResponse;
 import com.budgetbuddy.personal_finance_tracker.dto.UserRequest;
 import com.budgetbuddy.personal_finance_tracker.dto.UserResponse;
 import com.budgetbuddy.personal_finance_tracker.entity.User;
+import com.budgetbuddy.personal_finance_tracker.mapper.UserMapper;
 import com.budgetbuddy.personal_finance_tracker.service.UserService;
 import com.budgetbuddy.personal_finance_tracker.security.JwtTokenProvider;
 import jakarta.validation.Valid;
@@ -28,13 +29,15 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final JwtTokenProvider tokenProvider;
+    private final UserMapper userMapper;
+
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponse>> registerUser(@Valid @RequestBody UserRequest userRequest) {
         try {
-            User user = mapToEntity(userRequest);
+            User user = userMapper.toEntity(userRequest);
             User createdUser = userService.createUser(user);
-            UserResponse response = mapToResponse(createdUser);
+            UserResponse response =userMapper.toResponse(createdUser);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success("User registered successfully", response));
@@ -68,7 +71,7 @@ public class AuthController {
             LoginResponse response = LoginResponse.builder()
                     .accessToken(jwt)
                     .tokenType("Bearer")
-                    .user(mapToResponse(user))
+                    .user(userMapper.toResponse(user))
                     .build();
 
             return ResponseEntity.ok(ApiResponse.success("Login successful", response));
@@ -85,26 +88,4 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
     }
 
-    private User mapToEntity(UserRequest request) {
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        return user;
-    }
-
-    private UserResponse mapToResponse(User user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .isActive(user.getIsActive())
-                .createdAt(user.getCreatedAt())
-                .lastLogin(user.getLastLogin())
-                .build();
-    }
 }
