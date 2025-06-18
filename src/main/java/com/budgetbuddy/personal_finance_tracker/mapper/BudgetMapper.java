@@ -73,6 +73,7 @@ public class BudgetMapper {
     }
 
     public Budget updateEntity(BudgetRequest request) {
+        Budget existingBudget = null;
         if (request == null || existingBudget == null) {
             return existingBudget;
         }
