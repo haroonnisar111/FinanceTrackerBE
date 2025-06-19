@@ -1,6 +1,8 @@
 package com.budgetbuddy.personal_finance_tracker.service;
 
 import com.budgetbuddy.personal_finance_tracker.entity.User;
+import com.budgetbuddy.personal_finance_tracker.exception.BusinessRuleViolationException;
+import com.budgetbuddy.personal_finance_tracker.exception.UserNotFoundException;
 import com.budgetbuddy.personal_finance_tracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,9 +34,8 @@ public class UserService implements UserDetailsService {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new IllegalArgumentException("Username already exists");
         }
-
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new BusinessRuleViolationException("User with email " + user.getEmail() + " already exists");
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -43,7 +44,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional(readOnly = true)
     public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
+        return Optional.ofNullable(userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id)));
     }
 
     @Transactional(readOnly = true)
