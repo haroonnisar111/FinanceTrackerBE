@@ -3,10 +3,10 @@ spring:
     name: personal-finance-tracker
 
   datasource:
-    url: jdbc:h2:mem:financedb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: password
+    url: jdbc:postgresql://localhost:5432/postgres
+    driver-class-name: org.postgresql.Driver
+    username: haroon
+    password: "@Haru0821@"
 
   jpa:
     hibernate:
@@ -15,12 +15,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
   port: 8080
@@ -41,3 +36,8 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+app:
+  jwt:
+    secret: myverysecuresecretkey123  # <-- You can change this to a stronger secret key.
+    expiration: 86400000              # Optional: token expiration in milliseconds (1 day)

@@ -58,8 +58,9 @@ public class DatabaseConfig {
         properties.put("hibernate.order_inserts", "true");
         properties.put("hibernate.order_updates", "true");
         properties.put("hibernate.cache.use_second_level_cache", "true");
-        properties.put("hibernate.cache.region.factory_class", "org.hibernate.cache.jcache.JCacheRegionFactory");
+        properties.put("hibernate.cache.region.factory_class", "org.hibernate.cache.internal.NoCachingRegionFactory");
         properties.put("hibernate.generate_statistics", "false");
+
         return properties;
     }
 }
