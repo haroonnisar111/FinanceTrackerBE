@@ -3,6 +3,7 @@ package com.budgetbuddy.personal_finance_tracker.mapper;
 import com.budgetbuddy.personal_finance_tracker.dto.CategoryRequest;
 import com.budgetbuddy.personal_finance_tracker.dto.CategoryResponse;
 import com.budgetbuddy.personal_finance_tracker.entity.Category;
+import lombok.Data;
 import org.springframework.stereotype.Component;
 
 @Component
