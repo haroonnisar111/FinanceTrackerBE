@@ -3,7 +3,7 @@ spring:
     name: personal-finance-tracker
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/budgetbuddy
     driver-class-name: org.postgresql.Driver
     username: haroon
     password: "@Haru0821@"
@@ -16,14 +16,20 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+    # Add these for better JPA configuration
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
 
 server:
   port: 8080
 
 logging:
   level:
-    com.financetracker: DEBUG
+    # Fixed package name to match your actual package
+    com.budgetbuddy.personal_finance_tracker: DEBUG
     org.springframework.security: DEBUG
+    org.springframework.data.jpa: DEBUG
+    org.hibernate: DEBUG
 
 management:
   endpoints:
@@ -39,5 +45,6 @@ springdoc:
 
 app:
   jwt:
-    secret: myverysecuresecretkey123  # <-- You can change this to a stronger secret key.
-    expiration: 86400000              # Optional: token expiration in milliseconds (1 day)
+    # IMPORTANT: Generate a stronger secret key (at least 256 bits)
+    secret: myverysecuresuperlongjwtsecretkeythatisatleast256bitslong123456789
+    expiration: 86400000 # 24 hours in milliseconds

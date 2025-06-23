@@ -6,7 +6,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -81,7 +82,7 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // UserDetails implementation
+    // UserDetails implementation - Fixed to return actual field values
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptyList(); // Add roles/authorities as needed
@@ -89,12 +90,12 @@ public class User implements UserDetails {
 
     @Override
     public String getPassword() {
-        return null;
+        return this.password; // Return the actual password field
     }
 
     @Override
     public String getUsername() {
-        return null;
+        return this.username; // Return the actual username field
     }
 
     @Override
@@ -125,5 +126,8 @@ public class User implements UserDetails {
     public void updateLastLogin() {
         this.lastLoginAt = LocalDateTime.now();
     }
-    public LocalDateTime getLastLogin(){return this.lastLoginAt;}
+
+    public LocalDateTime getLastLogin() {
+        return this.lastLoginAt;
+    }
 }
