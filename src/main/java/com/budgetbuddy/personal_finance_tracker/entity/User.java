@@ -1,13 +1,13 @@
-// Solution 1: Simplified User without Lombok (try this first)
 package com.budgetbuddy.personal_finance_tracker.entity;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,6 +18,10 @@ import java.util.Collections;
                 @UniqueConstraint(columnNames = "username"),
                 @UniqueConstraint(columnNames = "email")
         })
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User implements UserDetails {
 
     @Id
@@ -51,15 +55,19 @@ public class User implements UserDetails {
     @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Builder.Default
     @Column(name = "is_account_non_expired", nullable = false)
     private Boolean isAccountNonExpired = true;
 
+    @Builder.Default
     @Column(name = "is_account_non_locked", nullable = false)
     private Boolean isAccountNonLocked = true;
 
+    @Builder.Default
     @Column(name = "is_credentials_non_expired", nullable = false)
     private Boolean isCredentialsNonExpired = true;
 
@@ -74,74 +82,20 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Default constructor
-    public User() {}
-
-    // Constructor with basic fields
-    public User(String username, String email, String password, String firstName, String lastName) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.isActive = true;
-        this.isAccountNonExpired = true;
-        this.isAccountNonLocked = true;
-        this.isCredentialsNonExpired = true;
-    }
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public void setPassword(String password) { this.password = password; }
-
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
-
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
-
-    public Boolean getIsActive() { return isActive; }
-    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
-
-    public Boolean getIsAccountNonExpired() { return isAccountNonExpired; }
-    public void setIsAccountNonExpired(Boolean isAccountNonExpired) { this.isAccountNonExpired = isAccountNonExpired; }
-
-    public Boolean getIsAccountNonLocked() { return isAccountNonLocked; }
-    public void setIsAccountNonLocked(Boolean isAccountNonLocked) { this.isAccountNonLocked = isAccountNonLocked; }
-
-    public Boolean getIsCredentialsNonExpired() { return isCredentialsNonExpired; }
-    public void setIsCredentialsNonExpired(Boolean isCredentialsNonExpired) { this.isCredentialsNonExpired = isCredentialsNonExpired; }
-
-    public LocalDateTime getLastLoginAt() { return lastLoginAt; }
-    public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    public void setUsername(String username) { this.username = username; }
-
-    // UserDetails implementation
+    // UserDetails implementation - Fixed to return actual field values
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return Collections.emptyList(); // Add roles/authorities as needed
     }
 
     @Override
     public String getPassword() {
-        return this.password;
+        return this.password; // Return the actual password field
     }
 
     @Override
     public String getUsername() {
-        return this.username;
+        return this.username; // Return the actual username field
     }
 
     @Override
