@@ -1,16 +1,14 @@
 spring:
   application:
     name: personal-finance-tracker
-
   datasource:
     url: jdbc:postgresql://localhost:5432/budgetbuddy
     driver-class-name: org.postgresql.Driver
     username: haroon
     password: "@Haru0821@"
-
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -19,10 +17,8 @@ spring:
     # Add these for better JPA configuration
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
-
 server:
   port: 8080
-
 logging:
   level:
     # Fixed package name to match your actual package
@@ -30,6 +26,9 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.data.jpa: DEBUG
     org.hibernate: DEBUG
+    org.hibernate.orm.deprecation: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.orm.jpa: DEBUG
 
 management:
   endpoints:
