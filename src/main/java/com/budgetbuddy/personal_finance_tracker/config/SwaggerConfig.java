@@ -48,14 +48,8 @@ public class SwaggerConfig {
                 .servers(List.of(
                         new Server()
                                 .url("http://localhost:" + serverPort)
-                                .description("Development Server"),
-                        new Server()
-                                .url("https://api.financetracker.com")
-                                .description("Production Server"),
-                        new Server()
-                                .url("https://staging-api.financetracker.com")
-                                .description("Staging Server")))
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                                .description("Development Server")))
+
                 .components(new io.swagger.v3.oas.models.Components()
                         .addSecuritySchemes("bearerAuth",
                                 new SecurityScheme()
