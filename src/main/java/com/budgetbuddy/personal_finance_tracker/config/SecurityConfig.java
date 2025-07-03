@@ -109,9 +109,8 @@ public class SecurityConfig {
 
         // Allow specific origins in production, all in development
         configuration.setAllowedOriginPatterns(List.of(
-                "http://localhost:3000",      // React development server
-                "http://localhost:4200",      // Angular development server
-                "https://*.financetracker.com" // Production domains
+                "http://localhost:3000"      // React development server
+
         ));
 
         configuration.setAllowedMethods(Arrays.asList(
