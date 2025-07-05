@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  finance-tracker:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=budgetbuddy
+      - DB_USER=haroon
+      - DB_PASSWORD="@Haru0821@"
+    depends_on:
+      - postgres
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - finance-network
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=budgetbuddy
+      - POSTGRES_USER=haroon
+      - POSTGRES_PASSWORD="@Haru0821@"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - finance-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - finance-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  finance-network:
+    driver: bridge
