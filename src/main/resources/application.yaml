@@ -2,10 +2,10 @@ spring:
   application:
     name: personal-finance-tracker
   datasource:
-    url: jdbc:postgresql://localhost:5432/budgetbuddy
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:budgetbuddy}
     driver-class-name: org.postgresql.Driver
-    username: haroon
-    password: "@Haru0821@"
+    username: ${DB_USER:haroon}
+    password: ${DB_PASSWORD:@Haru0821@}
   jpa:
     hibernate:
       ddl-auto: update
@@ -14,14 +14,12 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-    # Add these for better JPA configuration
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 server:
   port: 8080
 logging:
   level:
-    # Fixed package name to match your actual package
     com.budgetbuddy.personal_finance_tracker: DEBUG
     org.springframework.security: DEBUG
     org.springframework.data.jpa: DEBUG
@@ -44,6 +42,5 @@ springdoc:
 
 app:
   jwt:
-    # IMPORTANT: Generate a stronger secret key (at least 256 bits)
     secret: myverysecuresuperlongjwtsecretkeythatisatleast256bitslong123456789
     expiration: 86400000 # 24 hours in milliseconds
