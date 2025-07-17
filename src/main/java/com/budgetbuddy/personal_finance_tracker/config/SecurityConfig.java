@@ -81,10 +81,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/categories").hasRole("USER")
                         .requestMatchers(HttpMethod.PUT, "/api/categories/**").hasRole("USER")
                         .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("USER")
-
-                        // Report endpoints - User access only
-                        .requestMatchers("/api/reports/**").hasRole("USER")
-
                         // User profile management
                         .requestMatchers(HttpMethod.GET, "/api/users/profile").hasRole("USER")
                         .requestMatchers(HttpMethod.PUT, "/api/users/profile").hasRole("USER")
