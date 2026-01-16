@@ -1,0 +1,17 @@
+name: Learn Docker Build in CI
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t my-app:ci .
