@@ -20,7 +20,7 @@ RUN mvn clean package -DskipTests -B
 
 # The JAR file is now in the current working directory's target folder
 # Copy it to app.jar (this copies from the container's target directory)
-RUN cp target/personal-finance-tracker-*.jar app.jar
+RUN cp target/finance-tracker.jar app.jar
 
 # Expose port
 EXPOSE 8080

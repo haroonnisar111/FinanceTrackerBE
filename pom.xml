@@ -171,6 +171,7 @@
 		</dependencies>
 	</dependencyManagement>
 	<build>
+		<finalName>finance-tracker</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
