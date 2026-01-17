@@ -1,29 +1,25 @@
-FROM openjdk:17-jdk-slim
+# =========================
+# Stage 1: Build the app
+# =========================
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-# Set working directory
 WORKDIR /app
 
-# Install Maven
-RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Copy Maven files
-COPY pom.xml ./
-COPY mvnw* ./
-COPY .mvn .mvn/
-RUN chmod +x mvnw || true
-
-# Copy source code
 COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Build the application
-RUN mvn clean package -DskipTests -B
+# =========================
+# Stage 2: Run the app
+# =========================
+FROM eclipse-temurin:17-jre-jammy
 
-# The JAR file is now in the current working directory's target folder
-# Copy it to app.jar (this copies from the container's target directory)
-RUN cp target/finance-tracker.jar app.jar
+WORKDIR /app
 
-# Expose port
+COPY --from=build /app/target/finance-tracker.jar app.jar
+
 EXPOSE 8080
 
-# Run the application
-CMD ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
